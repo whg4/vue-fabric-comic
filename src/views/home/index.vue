@@ -100,6 +100,10 @@
           <div v-if="state.show" style="padding-top: 10px">
             <!-- 新增字体样式使用 -->
             <!-- <Button @click="getFontJson" size="small">获取字体数据</Button> -->
+            <Switch v-model="state.splitCell" @on-change="handleSplitChange">
+              <template #open>开</template>
+              <template #close>关</template>
+            </Switch>
             <set-size></set-size>
             <bg-bar></bg-bar>
             <group></group>
@@ -187,6 +191,7 @@ import Editor, {
   FlipPlugin,
   RulerPlugin,
   MaterialPlugin,
+  SplitCellPlugin,
 } from '@/core';
 
 // 创建编辑器
@@ -201,6 +206,7 @@ const state = reactive({
   attrBarShow: true,
   select: null,
   ruler: false,
+  splitCell: false,
 });
 
 onMounted(() => {
@@ -233,10 +239,22 @@ onMounted(() => {
   canvasEditor.use(FlipPlugin);
   canvasEditor.use(RulerPlugin);
   canvasEditor.use(MaterialPlugin);
+  canvasEditor.use(SplitCellPlugin);
+
+  window.editor = canvasEditor;
+
+  canvasEditor.on('splitModeChange', (event) => {
+    state.splitCell = event;
+  });
 
   event.init(canvas);
   state.show = true;
 });
+
+const handleSplitChange = (event) => {
+  state.splitCell = event;
+  canvasEditor.setSplitMode(event);
+};
 
 // 获取字体数据 新增字体样式使用
 // getFontJson() {

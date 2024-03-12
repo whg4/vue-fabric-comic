@@ -38,9 +38,9 @@ class HistoryPlugin {
       'selection:updated': (event: fabric.IEvent) => this._save(event),
     });
     window.addEventListener('beforeunload', function (e) {
-      if (history.length > 0) {
-        (e || window.event).returnValue = '确认离开';
-      }
+      // if (history.length > 0) {
+      //   (e || window.event).returnValue = '确认离开';
+      // }
     });
   }
 
