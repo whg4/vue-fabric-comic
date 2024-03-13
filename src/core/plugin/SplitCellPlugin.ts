@@ -5,11 +5,12 @@ import Editor from '../core';
 import { fabric } from 'fabric';
 import { getPointsFromObject, invertViewTransform } from '../utils/transform';
 import {
+  getGapPoints,
   getIntersectPoint,
   getLines,
   getSeparatePointsByLine,
   isSameLine,
-  // movePointAlongLine,
+  reArragePoints,
 } from '../utils/linear-equation';
 import { Line } from '../utils/line';
 import { Point } from '../utils/types';
@@ -96,6 +97,11 @@ export default class SplitCellPlugin {
     this._handleMouseDown = this._handleMouseDown.bind(this);
     this._handleMouseMove = this._handleMouseMove.bind(this);
     this._handleMouseUp = this._handleMouseUp.bind(this);
+    this._init();
+  }
+
+  _init() {
+    this._attachEvents();
   }
 
   _removeSnapLine() {
@@ -107,7 +113,7 @@ export default class SplitCellPlugin {
   }
 
   _drawSnapLine(pointer: fabric.Point) {
-    const activeObject = this.canvas.getActiveObject();
+    const activeObject = this.canvas.getActiveObject() || this.splitObject;
     if (!activeObject) {
       return;
     }
@@ -167,14 +173,14 @@ export default class SplitCellPlugin {
   }
 
   _handleMouseDown(event: fabric.IEvent) {
-    const activeObject = this.canvas.getActiveObject();
+    const activeObject = this.canvas.getActiveObject() || this.splitObject;
     const pointer = event.pointer;
-    console.log('event', event);
-    console.log('activeObject', activeObject);
 
     if (!activeObject || !pointer || !this.snapLine || !this.isSplitMode) {
       return;
     }
+    console.log('event', event);
+    console.log('activeObject', activeObject);
 
     // 挪到最上层
     activeObject.bringToFront();
@@ -182,6 +188,8 @@ export default class SplitCellPlugin {
     activeObject.set({
       lockMovementX: true,
       lockMovementY: true,
+      lockScalingX: true,
+      lockScalingY: true,
       selectable: false,
       hasControls: false,
       hasBorders: false,
@@ -211,12 +219,18 @@ export default class SplitCellPlugin {
   _handleMouseMove(event: fabric.IEvent) {
     const activeObject = this.canvas.getActiveObject();
     const pointer = event.pointer;
-    if (!activeObject || !pointer || !this.isSplitMode) {
+    if (!pointer || !this.isSplitMode) {
       return;
     }
 
+    this.canvas.setCursor('url(//assets.dreame.com/dreame/image/pen.png), auto');
+
     // 绘制吸附线
     this._drawSnapLine(pointer);
+
+    if (this.snapLine && activeObject) {
+      this.splitObject = activeObject;
+    }
 
     if (this.splitLine) {
       const p = invertViewTransform(pointer, this.canvas.viewportTransform as number[]);
@@ -231,7 +245,6 @@ export default class SplitCellPlugin {
   _handleMouseUp(event: fabric.IEvent) {
     const pointer = event.pointer as fabric.Point;
     this.splitLinePoints.push(pointer);
-    const snapLine = this.snapLine;
     const snapLineLF = this.snapLineLF;
     const splitLinePoints = this.splitLinePoints;
 
@@ -242,24 +255,30 @@ export default class SplitCellPlugin {
       this.splitLine = null;
     }
 
-    this.canvas.selection = true;
-    this._recoverSplitObject();
     this.splitLinePoints = [];
 
-    const activeObject = this.canvas.getActiveObject();
+    const activeObject = this.canvas.getActiveObject() || this.splitObject;
+
+    this._recoverSplitObject();
     if (!this.isSplitMode || !activeObject) {
       return;
     }
 
+    console.log('mouseup', event);
+    console.log('activeObject', activeObject);
+
     // 确保线存在且不是同一条线
-    if (!this.startLine || !snapLineLF || isSameLine(snapLineLF, this.startLine)) {
+    if (!this.startLine || !snapLineLF) {
       return;
     }
 
-    if (this.splitLinePoints.length !== 2) {
+    const isSameWithStartLine = isSameLine(snapLineLF, this.startLine);
+    if (isSameWithStartLine || splitLinePoints.length !== 2) {
       return;
     }
-    // console.log('snapLine', this.startLine, snapLine, snapLineLF);
+
+    console.log('splitLinePoints', splitLinePoints);
+    console.log('snapLine', this.startLine, snapLineLF);
 
     const splitLine = new Line(splitLinePoints);
     const lines = [this.startLine, snapLineLF];
@@ -267,19 +286,28 @@ export default class SplitCellPlugin {
       .map((line) => getIntersectPoint(splitLine, line))
       .filter((p) => p !== null) as Point[];
     console.log('intersectPoints', intersectPoints);
+    console.log('splitLine', splitLine);
 
     const points = getPointsFromObject(activeObject);
     if (intersectPoints.length !== 2 || !points) {
       return;
     }
     console.log('lines', lines);
-    const [positivePoints, negativePoints] = getSeparatePointsByLine(points, splitLine);
-    // const gapPoints = [
-    //   movePointAlongLine(lines[0].p1, intersectPoints[0], this.splitLineGap, intersectPoints[0]),
-    //   movePointAlongLine(lines[1].p1, intersectPoints[1], this.splitLineGap, intersectPoints[1]),
-    // ];
 
-    // console.log('gapPoints', gapPoints);
+    // 计算距离分割线一定距离的点
+    const gapPoints = getGapPoints({
+      lines: [...lines, splitLine],
+      d: this.splitLineGap,
+      starts: intersectPoints,
+    });
+    console.log('gapPoints', gapPoints);
+
+    const [positivePoints, negativePoints] = reArragePoints({
+      separatePoints: getSeparatePointsByLine(points, splitLine),
+      lines,
+      splitLine,
+    });
+    console.log('positivePoints, negativePoints', positivePoints, negativePoints);
 
     const shape1Points = grahamScan([...positivePoints, ...intersectPoints]).map((point) =>
       invertViewTransform(point, this.canvas.viewportTransform as number[])
@@ -291,7 +319,7 @@ export default class SplitCellPlugin {
       selectable: true,
     });
 
-    const shape2Points = grahamScan([...negativePoints, ...intersectPoints]).map((point) =>
+    const shape2Points = grahamScan([...negativePoints, ...gapPoints]).map((point) =>
       invertViewTransform(point, this.canvas.viewportTransform as number[])
     );
     const splitShape2 = new fabric.Polygon(shape2Points, {
@@ -310,13 +338,14 @@ export default class SplitCellPlugin {
   }
 
   _recoverSplitObject() {
-    const activeObject = this.canvas.getActiveObject();
-    if (activeObject !== null && this.splitObject === activeObject) {
+    if (this.splitObject) {
       // 还原分格对象的位置
-      activeObject.moveTo(this.splitObjectIdx);
-      activeObject.set({
+      this.splitObject.moveTo(this.splitObjectIdx);
+      this.splitObject.set({
         lockMovementX: false,
         lockMovementY: false,
+        lockScalingX: false,
+        lockScalingY: false,
         selectable: true,
         hasControls: true,
         hasBorders: true,
@@ -344,12 +373,6 @@ export default class SplitCellPlugin {
    */
   setSplitMode(isSplitMode: boolean) {
     this.isSplitMode = isSplitMode;
-
-    if (isSplitMode) {
-      this._attachEvents();
-    } else {
-      this._detachEvents();
-    }
   }
 
   getSplitMode() {

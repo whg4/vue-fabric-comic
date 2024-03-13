@@ -22,7 +22,13 @@ export class Line {
   p2: Point;
 
   constructor(points: Point[]) {
-    const [p1, p2] = points;
+    // 确保 p1.x < p2.x，适配坐标系
+    const [p1, p2] = [...points].sort((a, b) => {
+      if (a.x === b.x) {
+        return a.y - b.y;
+      }
+      return a.x - b.x;
+    });
     this.p1 = p1;
     this.p2 = p2;
 
