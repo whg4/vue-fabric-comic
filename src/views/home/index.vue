@@ -264,11 +264,11 @@ const handleSplitChange = (event) => {
 
 const handleSetImage = (type = '1') => {
   if (type === '1') {
-    canvasEditor.setImage({
+    canvasEditor.setCellImage({
       src: `/debu${type}.jpg`,
     });
   } else {
-    canvasEditor.setImage({
+    canvasEditor.setCellImage({
       src: `/debu${type}.png`,
     });
   }

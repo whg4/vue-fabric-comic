@@ -6,16 +6,13 @@ import { fabric } from 'fabric';
 import Editor from '../core';
 import { getClonedObject, getImageObject } from '../utils/common';
 import { transformPoint } from '../utils/transform';
-
-export interface SetImageOptions {
-  src: string;
-  /**
-   * 其他属性，可以设置图片的自定义属性
-   */
-  [key: string]: unknown;
-}
-
-export interface SetCropOptions extends SetImageOptions {
+import {
+  ControlDeleteEvent,
+  EDITOR_EVENTS,
+  SetCellImageOptions,
+  TRANSFORM_IMAGE_ID,
+} from '../types';
+export interface SetCropOptions extends SetCellImageOptions {
   object: fabric.Object;
 }
 
@@ -23,7 +20,7 @@ class CropPlugin {
   canvas: fabric.Canvas;
   editor: Editor;
   static pluginName = 'CropPlugin';
-  static apis = ['setImage'];
+  static apis = ['setCellImage'];
   static events = [];
   hotkeys: string[] = [];
   constructor(canvas: fabric.Canvas, editor: Editor) {
@@ -39,11 +36,46 @@ class CropPlugin {
 
   _attachEvents() {
     this.canvas.on('mouse:dblclick', this._handleMouseDbClick);
+    this.editor.on(EDITOR_EVENTS.DELETE, this._handleDelete);
   }
 
   _detachEvents() {
     this.canvas.off('mouse:dblclick', this._handleMouseDbClick);
+    this.editor.off(EDITOR_EVENTS.DELETE, this._handleDelete);
   }
+
+  /**
+   * 处理删除事件，当删除transform image时，需要将其内部的图片移除
+   */
+  _handleDelete = async (event: ControlDeleteEvent) => {
+    const { objects } = event;
+    const transformImage = objects.find((obj) => obj.id === TRANSFORM_IMAGE_ID);
+
+    if (!transformImage) {
+      return;
+    }
+
+    if (!transformImage._group) {
+      return;
+    }
+
+    const innerImage = transformImage._group.getObjects().find((obj) => obj.type === 'image') as
+      | fabric.Image
+      | undefined;
+
+    if (!innerImage) {
+      return;
+    }
+
+    const substituteImage = await getImageObject('');
+    substituteImage.set({
+      originX: 'center',
+      originY: 'center',
+      selectable: false,
+    });
+    transformImage._group.insertAt(substituteImage, 0, true);
+    this.canvas.renderAll();
+  };
 
   _handleMouseDbClick = async () => {
     const activeObject = this.canvas.getActiveObject();
@@ -59,8 +91,10 @@ class CropPlugin {
     }
 
     const subObjects = (groupObject as fabric.Group).getObjects();
-    const innerImage = subObjects.find((obj) => obj.type === 'image');
-    if (!innerImage) {
+    const innerImage = subObjects.find((obj) => obj.type === 'image') as fabric.Image | undefined;
+    const hasImageEl = innerImage?.getElement() instanceof HTMLImageElement;
+    // 如果group里面没有Image对象，或者Image对象没有element属性，则不进行裁剪
+    if (!innerImage || !hasImageEl) {
       return;
     }
 
@@ -78,6 +112,8 @@ class CropPlugin {
 
     const transformImage = await getClonedObject(innerImage);
     transformImage.set({
+      // 标识为transformImage
+      id: TRANSFORM_IMAGE_ID,
       left: topLeft.x,
       top: topLeft.y,
       width: innerImage.width,
@@ -86,6 +122,8 @@ class CropPlugin {
       scaleY: innerImage.scaleY! * groupObject.scaleY!,
       angle: innerImage.angle,
       opacity: 0.5,
+      // 标识所归属的group
+      _group: groupObject as fabric.Group,
     });
     groupObject.set('selectable', false);
 
@@ -177,12 +215,17 @@ class CropPlugin {
   /**
    * 设置格子图片url或其他属性
    */
-  setImage(params: SetImageOptions) {
+  setCellImage(params: SetCellImageOptions) {
     const { src, ...other } = params;
     const activeObject = this.canvas.getActiveObject();
     console.log('activeObject', activeObject);
     if (!activeObject) {
       console.warn('no active object');
+      return;
+    }
+
+    if (activeObject.id === TRANSFORM_IMAGE_ID) {
+      console.log('transformImage can not set image');
       return;
     }
 

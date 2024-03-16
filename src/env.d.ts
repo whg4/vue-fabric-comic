@@ -16,6 +16,8 @@ declare global {
        * 标识
        */
       id?: string | undefined;
+
+      _group?: fabric.Group;
     }
   }
 }
