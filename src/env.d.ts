@@ -18,6 +18,12 @@ declare global {
       id?: string | undefined;
 
       _group?: fabric.Group;
+
+      /**
+       * 格子类型，
+       * basic: 基础格子，不能被拆分
+       */
+      cellType?: 'basic';
     }
   }
 }

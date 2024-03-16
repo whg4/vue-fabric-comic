@@ -1,4 +1,5 @@
 import { fabric } from 'fabric';
+import { Cell } from '../types';
 
 export const getImageObject = (src: string) => {
   return new Promise<fabric.Image>((resolve, reject) => {
@@ -22,4 +23,8 @@ export const getClonedObject = (object: fabric.Object) => {
       reject(error);
     }
   });
+};
+
+export const isBasicCell = (object: fabric.Object | null) => {
+  return object?.cellType === Cell.BASIC;
 };

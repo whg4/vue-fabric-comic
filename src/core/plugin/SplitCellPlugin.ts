@@ -15,6 +15,7 @@ import {
 import { Line } from '../utils/line';
 import { Point } from '../utils/types';
 import { grahamScan } from '../utils/gram-scan';
+import { isBasicCell } from '../utils/common';
 
 export default class SplitCellPlugin {
   public canvas: fabric.Canvas;
@@ -176,7 +177,17 @@ export default class SplitCellPlugin {
     const activeObject = this.canvas.getActiveObject() || this.splitObject;
     const pointer = event.pointer;
 
-    if (!activeObject || !pointer || !this.snapLine || !this.isSplitMode) {
+    if (!activeObject || !pointer) {
+      return;
+    }
+
+    /**
+     * 画线的起始条件是
+     * 1）有起始吸附线
+     * 2）不是是基础格子
+     * 3）是分格模式
+     * */
+    if (!this.snapLine || !this.isSplitMode || isBasicCell(activeObject)) {
       return;
     }
     console.log('event', event);
@@ -219,7 +230,7 @@ export default class SplitCellPlugin {
   _handleMouseMove(event: fabric.IEvent) {
     const activeObject = this.canvas.getActiveObject();
     const pointer = event.pointer;
-    if (!pointer || !this.isSplitMode) {
+    if (!pointer || !this.isSplitMode || isBasicCell(activeObject)) {
       return;
     }
 
@@ -260,7 +271,7 @@ export default class SplitCellPlugin {
     const activeObject = this.canvas.getActiveObject() || this.splitObject;
 
     this._recoverSplitObject();
-    if (!this.isSplitMode || !activeObject) {
+    if (!this.isSplitMode || !activeObject || isBasicCell(activeObject)) {
       return;
     }
 
