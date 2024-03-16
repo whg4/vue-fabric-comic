@@ -98,12 +98,16 @@
         <!-- 属性区域 380-->
         <div class="right-bar" v-show="state.attrBarShow">
           <div v-if="state.show" style="padding-top: 10px">
-            <!-- 新增字体样式使用 -->
             <!-- <Button @click="getFontJson" size="small">获取字体数据</Button> -->
+            <!-- 新增字体样式使用 -->
             <Switch v-model="state.splitCell" @on-change="handleSplitChange">
               <template #open>开</template>
               <template #close>关</template>
             </Switch>
+            <Button @click="handleSetImage('1')" size="small">设置图片1</Button>
+            <Button @click="handleSetImage('2')" size="small">设置图片2</Button>
+            <Button @click="handleSetImage('3')" size="small">设置图片3</Button>
+            <Button @click="handleSetImage('4')" size="small">设置图片4</Button>
             <set-size></set-size>
             <bg-bar></bg-bar>
             <group></group>
@@ -192,6 +196,7 @@ import Editor, {
   RulerPlugin,
   MaterialPlugin,
   SplitCellPlugin,
+  CropPlugin,
 } from '@/core';
 
 // 创建编辑器
@@ -240,6 +245,7 @@ onMounted(() => {
   canvasEditor.use(RulerPlugin);
   canvasEditor.use(MaterialPlugin);
   canvasEditor.use(SplitCellPlugin);
+  canvasEditor.use(CropPlugin);
 
   window.editor = canvasEditor;
 
@@ -254,6 +260,18 @@ onMounted(() => {
 const handleSplitChange = (event) => {
   state.splitCell = event;
   canvasEditor.setSplitMode(event);
+};
+
+const handleSetImage = (type = '1') => {
+  if (type === '1') {
+    canvasEditor.setImage({
+      src: `/debu${type}.jpg`,
+    });
+  } else {
+    canvasEditor.setImage({
+      src: `/debu${type}.png`,
+    });
+  }
 };
 
 // 获取字体数据 新增字体样式使用

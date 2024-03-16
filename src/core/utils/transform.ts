@@ -19,6 +19,10 @@ export const transformPoints = (obj: any, points: Point[]) => {
   });
 };
 
+export const transformPoint = (point: fabric.Point, matrix: number[]) => {
+  return fabric.util.transformPoint(point, matrix);
+};
+
 export const getPointsFromObject = (obj: any): Point[] | null => {
   if (obj.type === 'rect') {
     return [
