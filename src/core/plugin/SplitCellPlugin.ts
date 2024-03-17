@@ -5,17 +5,16 @@ import Editor from '../core';
 import { fabric } from 'fabric';
 import { getPointsFromObject, invertViewTransform } from '../utils/transform';
 import {
-  getGapPoints,
   getIntersectPoint,
   getLines,
   getSeparatePointsByLine,
   isSameLine,
-  reArragePoints,
 } from '../utils/linear-equation';
 import { Line } from '../utils/line';
 import { Point } from '../utils/types';
 import { grahamScan } from '../utils/gram-scan';
 import { isBasicCell } from '../utils/common';
+import { getGapPoints } from '../utils/split-helper';
 
 export default class SplitCellPlugin {
   public canvas: fabric.Canvas;
@@ -90,6 +89,11 @@ export default class SplitCellPlugin {
    * 分格线的间隙
    */
   splitLineGap = 10;
+
+  /**
+   * 基础缩放比例
+   */
+  basicZoom = 0.18;
 
   constructor(canvas: fabric.Canvas, editor: Editor) {
     this.canvas = canvas;
@@ -173,6 +177,23 @@ export default class SplitCellPlugin {
     this.snapLine.bringToFront();
   }
 
+  _lockSplitObject(object: fabric.Object) {
+    if (this.splitObject !== object) {
+      this._recoverSplitObject();
+    }
+
+    object.set({
+      lockMovementX: true,
+      lockMovementY: true,
+      lockScalingX: true,
+      lockScalingY: true,
+      selectable: false,
+      hasControls: false,
+      hasBorders: false,
+      opacity: 0.4,
+    });
+  }
+
   _handleMouseDown(event: fabric.IEvent) {
     const activeObject = this.canvas.getActiveObject() || this.splitObject;
     const pointer = event.pointer;
@@ -196,16 +217,7 @@ export default class SplitCellPlugin {
     // 挪到最上层
     activeObject.bringToFront();
     // 锁定分格对象的位置
-    activeObject.set({
-      lockMovementX: true,
-      lockMovementY: true,
-      lockScalingX: true,
-      lockScalingY: true,
-      selectable: false,
-      hasControls: false,
-      hasBorders: false,
-      opacity: 0.4,
-    });
+    this._lockSplitObject(activeObject);
 
     this.splitLinePoints.push(pointer);
     this.startLine = this.snapLineLF;
@@ -232,6 +244,10 @@ export default class SplitCellPlugin {
     const pointer = event.pointer;
     if (!pointer || !this.isSplitMode || isBasicCell(activeObject)) {
       return;
+    }
+
+    if (activeObject) {
+      this._lockSplitObject(activeObject);
     }
 
     this.canvas.setCursor('url(//assets.dreame.com/dreame/image/pen.png), auto');
@@ -305,22 +321,29 @@ export default class SplitCellPlugin {
     }
     console.log('lines', lines);
 
-    // 计算距离分割线一定距离的点
+    /**
+     * 平移分割线，生成d长度的间隔
+     * 平移方向为向分割线的正值区域
+     */
+    const zoom = this.canvas.getZoom();
     const gapPoints = getGapPoints({
       lines: [...lines, splitLine],
-      d: this.splitLineGap,
+      d: this.splitLineGap / (this.basicZoom / zoom),
       starts: intersectPoints,
     });
     console.log('gapPoints', gapPoints);
+    // 如果没有间隙点，不进行分格
+    if (!gapPoints.length) {
+      return;
+    }
 
-    const [positivePoints, negativePoints] = reArragePoints({
-      separatePoints: getSeparatePointsByLine(points, splitLine),
-      lines,
-      splitLine,
-    });
+    /**
+     * 将点分为两部分，一部分在分割线的正值区域，一部分在分割线的负值区域
+     */
+    const [positivePoints, negativePoints] = getSeparatePointsByLine(points, splitLine);
     console.log('positivePoints, negativePoints', positivePoints, negativePoints);
 
-    const shape1Points = grahamScan([...positivePoints, ...intersectPoints]).map((point) =>
+    const shape1Points = grahamScan([...negativePoints, ...intersectPoints]).map((point) =>
       invertViewTransform(point, this.canvas.viewportTransform as number[])
     );
     const splitShape1 = new fabric.Polygon(shape1Points, {
@@ -330,7 +353,7 @@ export default class SplitCellPlugin {
       selectable: true,
     });
 
-    const shape2Points = grahamScan([...negativePoints, ...gapPoints]).map((point) =>
+    const shape2Points = grahamScan([...positivePoints, ...gapPoints]).map((point) =>
       invertViewTransform(point, this.canvas.viewportTransform as number[])
     );
     const splitShape2 = new fabric.Polygon(shape2Points, {
@@ -373,7 +396,7 @@ export default class SplitCellPlugin {
   }
 
   _detachEvents() {
-    this.canvas.off('mousedown', this._handleMouseDown);
+    this.canvas.off('mouse:down', this._handleMouseDown);
     this.canvas.off('mouse:move', this._handleMouseMove);
     this.canvas.off('mouse:up', this._handleMouseUp);
   }

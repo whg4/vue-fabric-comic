@@ -196,7 +196,7 @@ import Editor, {
   RulerPlugin,
   MaterialPlugin,
   SplitCellPlugin,
-  CropPlugin,
+  CellPlugin,
 } from '@/core';
 
 // 创建编辑器
@@ -245,7 +245,7 @@ onMounted(() => {
   canvasEditor.use(RulerPlugin);
   canvasEditor.use(MaterialPlugin);
   canvasEditor.use(SplitCellPlugin);
-  canvasEditor.use(CropPlugin);
+  canvasEditor.use(CellPlugin);
 
   window.editor = canvasEditor;
 

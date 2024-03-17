@@ -26,7 +26,7 @@ import FlipPlugin from './plugin/FlipPlugin';
 import RulerPlugin from './plugin/RulerPlugin';
 import MaterialPlugin from './plugin/MaterialPlugin';
 import SplitCellPlugin from './plugin/SplitCellPlugin';
-import CropPlugin from './plugin/CropPlugin';
+import CellPlugin from './plugin/CellPlugin';
 
 export {
   DringPlugin,
@@ -49,6 +49,6 @@ export {
   RulerPlugin,
   MaterialPlugin,
   SplitCellPlugin,
-  CropPlugin,
+  CellPlugin,
 };
 export default Editor;

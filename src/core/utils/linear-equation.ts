@@ -90,43 +90,11 @@ export const getLineUnitVector = (line: Line) => {
   };
 };
 
-export const getGapPoints = (options: { lines: Line[]; d: number; starts: Point[] }) => {
-  const { lines, d, starts } = options;
-  const [line1, line2, splitLine] = lines;
-  const [p1, p2] = starts;
-  const [v1, v2] = [getLineUnitVector(line1), getLineUnitVector(line2)];
-
-  const condition1 =
-    ((line1.k < 0 && line2.k > 0) || (line1.k > 0 && line2.k < 0)) && splitLine.k > 0;
-  const condition2 =
-    v1.ux > 0 && (line2.k < 0 || line2.isVertical) && isSamePoint(line1.p2, line2.p1);
-  const condition3 =
-    ((line1.k < 0 && line2.k > 0) || (line1.k > 0 && line2.k < 0)) && splitLine.k < 0;
-
-  const point2MinusY = condition1 || condition2;
-  const point2MinusX = condition3;
-
-  // FIXME: 需要考虑边角情况
-  const gapPoints = [
-    {
-      x: p1.x + d * v1.ux,
-      y: p1.y + d * v1.uy,
-    },
-    {
-      x: p2.x + d * v2.ux,
-      y: point2MinusY
-        ? p2.y - Math.abs(d * v2.uy)
-        : point2MinusX
-        ? p2.y + Math.abs(d * v2.uy)
-        : p2.y + d * v2.uy,
-    },
-  ];
-
-  return gapPoints;
-};
-
-export const isSamePoint = (point1: Point, point2: Point) => {
-  return point1.x === point2.x && point1.y === point2.y;
+export const isSamePoint = (point1: Point, point2: Point, precise = 2) => {
+  return (
+    point1.x.toFixed(precise) === point2.x.toFixed(precise) &&
+    point1.y.toFixed(precise) === point2.y.toFixed(precise)
+  );
 };
 
 export const isSameLine = (line1: Line, line2: Line) => {
@@ -136,28 +104,4 @@ export const isSameLine = (line1: Line, line2: Line) => {
     line1.p2.x === line2.p2.x &&
     line1.p2.y === line2.p2.y
   );
-};
-
-/*
- * 将分割线ac与另一分割线db的组成的点区分开来，需要重新对分割线切分的点进行排序
- *  A-a------b-B
- *  | | gap  | |
- *  | |      | |
- *  C-c------d-D
- * AaCc、bBdD组成新的图形
- */
-export const reArragePoints = (options: {
-  separatePoints: Point[][];
-  lines: Line[];
-  splitLine: Line;
-}) => {
-  const { separatePoints, splitLine } = options;
-  const [positivePoints, negativePoints] = separatePoints;
-
-  // FIXME: 需要考虑边角情况
-  if (splitLine.k < 0) {
-    return [negativePoints, positivePoints];
-  }
-
-  return [positivePoints, negativePoints];
 };

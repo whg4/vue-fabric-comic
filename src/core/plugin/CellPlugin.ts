@@ -1,5 +1,5 @@
 /*
- * @Description: 图片裁剪插件
+ * @Description: 格子插件
  */
 
 import { fabric } from 'fabric';
@@ -16,10 +16,18 @@ export interface SetCropOptions extends SetCellImageOptions {
   object: fabric.Object;
 }
 
-class CropPlugin {
+/**
+ * 格子插件，管理格子内部的对象
+ * Group内部对象，顺序按以下位置排序：
+ * 1. image
+ * 2. 格子（用作裁剪路径）
+ * 3. 备注
+ */
+
+class CellPlugin {
   canvas: fabric.Canvas;
   editor: Editor;
-  static pluginName = 'CropPlugin';
+  static pluginName = 'CellPlugin';
   static apis = ['setCellImage', 'clearCellImage'];
   static events = [];
   hotkeys: string[] = [];
@@ -351,9 +359,9 @@ class CropPlugin {
   }
 
   destroy() {
-    console.log('CropPlugin destroy');
+    console.log('CellPlugin destroy');
     this._detachEvents();
   }
 }
 
-export default CropPlugin;
+export default CellPlugin;
