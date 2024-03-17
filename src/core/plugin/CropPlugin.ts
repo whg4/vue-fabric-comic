@@ -20,7 +20,7 @@ class CropPlugin {
   canvas: fabric.Canvas;
   editor: Editor;
   static pluginName = 'CropPlugin';
-  static apis = ['setCellImage'];
+  static apis = ['setCellImage', 'clearCellImage'];
   static events = [];
   hotkeys: string[] = [];
   constructor(canvas: fabric.Canvas, editor: Editor) {
@@ -242,6 +242,38 @@ class CropPlugin {
       default:
         this._handleSetImage(options);
     }
+  }
+
+  /**
+   * 清除格子图片
+   */
+  async clearCellImage() {
+    const activeObject = this.canvas.getActiveObject();
+    if (!activeObject) {
+      console.warn('clearCellImage no active object');
+      return;
+    }
+
+    const groupObject = activeObject.type !== 'group' ? activeObject.group : activeObject;
+    if (!groupObject || groupObject.type !== 'group') {
+      return;
+    }
+
+    const innerImage = (groupObject as fabric.Group)
+      .getObjects()
+      .find((obj) => obj.type === 'image');
+
+    if (!innerImage) {
+      return;
+    }
+
+    const substituteImage = await getImageObject('');
+    substituteImage.set({
+      originX: 'center',
+      originY: 'center',
+      selectable: false,
+    });
+    (groupObject as fabric.Group).insertAt(substituteImage, 0, true);
   }
 
   /**
