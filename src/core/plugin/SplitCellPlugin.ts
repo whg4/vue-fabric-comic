@@ -15,6 +15,7 @@ import { Point } from '../utils/types';
 import { grahamScan } from '../utils/gram-scan';
 import { isBasicCell } from '../utils/common';
 import { getGapPoints } from '../utils/split-helper';
+import { EDITOR_EVENTS } from '../types';
 
 export default class SplitCellPlugin {
   public canvas: fabric.Canvas;
@@ -102,11 +103,6 @@ export default class SplitCellPlugin {
     this._handleMouseDown = this._handleMouseDown.bind(this);
     this._handleMouseMove = this._handleMouseMove.bind(this);
     this._handleMouseUp = this._handleMouseUp.bind(this);
-    this._init();
-  }
-
-  _init() {
-    this._attachEvents();
   }
 
   _removeSnapLine() {
@@ -239,6 +235,18 @@ export default class SplitCellPlugin {
     this.canvas.add(splitLine);
   }
 
+  _getInheritObject(object: fabric.Object) {
+    if (object.type !== 'group') {
+      return object;
+    }
+
+    const group = object as fabric.Group;
+    const objects = group.getObjects();
+    const cellObject = objects[1];
+
+    return cellObject ? cellObject : object;
+  }
+
   _handleMouseMove(event: fabric.IEvent) {
     const activeObject = this.canvas.getActiveObject();
     const pointer = event.pointer;
@@ -346,20 +354,21 @@ export default class SplitCellPlugin {
     const shape1Points = grahamScan([...negativePoints, ...intersectPoints]).map((point) =>
       invertViewTransform(point, this.canvas.viewportTransform as number[])
     );
-    const splitShape1 = new fabric.Polygon(shape1Points, {
-      fill: activeObject.fill,
-      stroke: activeObject.stroke,
-      strokeWidth: activeObject.strokeWidth,
-      selectable: true,
-    });
-
     const shape2Points = grahamScan([...positivePoints, ...gapPoints]).map((point) =>
       invertViewTransform(point, this.canvas.viewportTransform as number[])
     );
+    const inheritObject = this._getInheritObject(activeObject);
+    const splitShape1 = new fabric.Polygon(shape1Points, {
+      fill: inheritObject.fill,
+      stroke: inheritObject.stroke,
+      strokeWidth: inheritObject.strokeWidth,
+      selectable: true,
+    });
+
     const splitShape2 = new fabric.Polygon(shape2Points, {
-      fill: activeObject.fill,
-      stroke: activeObject.stroke,
-      strokeWidth: activeObject.strokeWidth,
+      fill: inheritObject.fill,
+      stroke: inheritObject.stroke,
+      strokeWidth: inheritObject.strokeWidth,
       selectable: true,
     });
 
@@ -367,14 +376,18 @@ export default class SplitCellPlugin {
     this.canvas.add(splitShape2);
     this.canvas.remove(activeObject);
 
-    this.isSplitMode = false;
-    this.editor.emit('splitModeChange', this.isSplitMode);
+    this.setSplitMode(false);
+    this.editor.emit(EDITOR_EVENTS.CELL_SPLIT, {
+      splitObjects: [shape1Points, shape2Points],
+      originObject: activeObject,
+    });
+    this.editor.emit(EDITOR_EVENTS.SPLIT_MODE_CHANGE, this.isSplitMode);
   }
 
   _recoverSplitObject() {
     if (this.splitObject) {
       // 还原分格对象的位置
-      this.splitObject.moveTo(this.splitObjectIdx);
+      // this.splitObject.moveTo(this.splitObjectIdx);
       this.splitObject.set({
         lockMovementX: false,
         lockMovementY: false,
@@ -385,6 +398,7 @@ export default class SplitCellPlugin {
         hasBorders: true,
         opacity: 1,
       });
+      this.editor.canvas.renderAll();
       this.splitObject = null;
     }
   }
@@ -407,6 +421,12 @@ export default class SplitCellPlugin {
    */
   setSplitMode(isSplitMode: boolean) {
     this.isSplitMode = isSplitMode;
+    if (isSplitMode) {
+      this._attachEvents();
+    } else {
+      this._detachEvents();
+      this._recoverSplitObject();
+    }
   }
 
   getSplitMode() {

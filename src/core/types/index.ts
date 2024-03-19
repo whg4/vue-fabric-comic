@@ -29,6 +29,11 @@ export enum EDITOR_EVENTS {
    * 删除事件
    */
   DELETE = 'delete',
+
+  /**
+   * 格子分割事件
+   */
+  CELL_SPLIT = 'cellSplit',
 }
 
 export const TRANSFORM_IMAGE_ID = 'TRANSFORM_IMAGE';
