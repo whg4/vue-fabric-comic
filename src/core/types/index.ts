@@ -4,6 +4,18 @@ export interface ControlDeleteEvent {
   objects: fabric.Object[];
 }
 
+export interface CellSplitEvent {
+  /**
+   * 分割形成的object
+   */
+  splitObjects: fabric.Object[];
+
+  /**
+   * 被分割object
+   */
+  originObject: fabric.Object;
+}
+
 export enum Cell {
   /**
    * 基础格子，不能被拆分

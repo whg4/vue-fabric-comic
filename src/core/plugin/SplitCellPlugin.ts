@@ -99,10 +99,6 @@ export default class SplitCellPlugin {
   constructor(canvas: fabric.Canvas, editor: Editor) {
     this.canvas = canvas;
     this.editor = editor;
-
-    this._handleMouseDown = this._handleMouseDown.bind(this);
-    this._handleMouseMove = this._handleMouseMove.bind(this);
-    this._handleMouseUp = this._handleMouseUp.bind(this);
   }
 
   _removeSnapLine() {
@@ -190,7 +186,7 @@ export default class SplitCellPlugin {
     });
   }
 
-  _handleMouseDown(event: fabric.IEvent) {
+  _handleMouseDown = (event: fabric.IEvent) => {
     const activeObject = this.canvas.getActiveObject() || this.splitObject;
     const pointer = event.pointer;
 
@@ -207,6 +203,7 @@ export default class SplitCellPlugin {
     if (!this.snapLine || !this.isSplitMode || isBasicCell(activeObject)) {
       return;
     }
+    this._recoverSplitObject();
     console.log('event', event);
     console.log('activeObject', activeObject);
 
@@ -233,7 +230,7 @@ export default class SplitCellPlugin {
     });
     this.splitLine = splitLine;
     this.canvas.add(splitLine);
-  }
+  };
 
   _getInheritObject(object: fabric.Object) {
     if (object.type !== 'group') {
@@ -247,7 +244,7 @@ export default class SplitCellPlugin {
     return cellObject ? cellObject : object;
   }
 
-  _handleMouseMove(event: fabric.IEvent) {
+  _handleMouseMove = (event: fabric.IEvent) => {
     const activeObject = this.canvas.getActiveObject();
     const pointer = event.pointer;
     if (!pointer || !this.isSplitMode || isBasicCell(activeObject)) {
@@ -275,9 +272,9 @@ export default class SplitCellPlugin {
       });
       this.canvas.renderAll();
     }
-  }
+  };
 
-  _handleMouseUp(event: fabric.IEvent) {
+  _handleMouseUp = (event: fabric.IEvent) => {
     const pointer = event.pointer as fabric.Point;
     this.splitLinePoints.push(pointer);
     const snapLineLF = this.snapLineLF;
@@ -378,11 +375,11 @@ export default class SplitCellPlugin {
 
     this.setSplitMode(false);
     this.editor.emit(EDITOR_EVENTS.CELL_SPLIT, {
-      splitObjects: [shape1Points, shape2Points],
+      splitObjects: [splitShape1, splitShape2],
       originObject: activeObject,
     });
     this.editor.emit(EDITOR_EVENTS.SPLIT_MODE_CHANGE, this.isSplitMode);
-  }
+  };
 
   _recoverSplitObject() {
     if (this.splitObject) {
@@ -398,7 +395,7 @@ export default class SplitCellPlugin {
         hasBorders: true,
         opacity: 1,
       });
-      this.editor.canvas.renderAll();
+      this.canvas.renderAll();
       this.splitObject = null;
     }
   }

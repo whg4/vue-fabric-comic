@@ -7,7 +7,7 @@ export const transformPoint = (point: fabric.Point, matrix: number[]) => {
 };
 
 const getRectPoints = (rect: fabric.Rect) => {
-  if (rect.oCoords) {
+  if (rect.oCoords && !rect.group) {
     return [rect.oCoords!.tl, rect.oCoords!.tr, rect.oCoords!.br, rect.oCoords!.bl];
   }
 

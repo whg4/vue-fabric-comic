@@ -20,7 +20,7 @@ const isLeftMiddle = (p: Point | null, p1: Point, p2: Point) => {
   if (!p) {
     return false;
   }
-  return p.x <= p1.x && p.y >= p2.y;
+  return p.x <= p1.x && p.y <= p1.y && p.x <= p2.x && p.y >= p2.y;
 };
 
 const isLeftBottom = (p: Point | null, p1: Point, p2: Point) => {
@@ -55,7 +55,7 @@ const isRightMiddle = (p: Point | null, p1: Point, p2: Point) => {
   if (!p) {
     return false;
   }
-  return p.x >= p1.x && p.y >= p2.y;
+  return p.x >= p1.x && p.y >= p1.y && p.x <= p2.x && p.y >= p2.y;
 };
 
 const isRightTopMiddle = (p: Point | null, p1: Point, p2: Point) => {
@@ -98,6 +98,10 @@ const isRightBetween = (p: Point | null, p1: Point, p2: Point) => {
     return false;
   }
   return p.x >= p1.x && p.y >= p1.y && p.x >= p2.x && p.y <= p2.y;
+};
+
+const isPositiveK = (line: Line) => {
+  return line.k !== Infinity && line.k > 0;
 };
 
 /**
@@ -253,7 +257,7 @@ const getHorizontalGapPoints = (options: { lines: Line[]; d: number; starts: Poi
   const [p1, p2] = starts;
   const [, , splitLine] = lines;
 
-  if (splitLine.k > 0) {
+  if (isPositiveK(splitLine)) {
     return [
       {
         x: p1.x - d,
@@ -266,7 +270,7 @@ const getHorizontalGapPoints = (options: { lines: Line[]; d: number; starts: Poi
     ];
   }
 
-  if (splitLine.k < 0) {
+  if (splitLine.k < 0 || splitLine.isVertical) {
     return [
       {
         x: p1.x + d,
@@ -1420,12 +1424,12 @@ const getNotVHGapPoints = (options: { lines: Line[]; d: number; starts: Point[] 
   ) {
     return [
       {
-        x: p1.x - Math.abs(d * v1.ux),
-        y: p1.y - Math.abs(d * v1.uy),
+        x: p1.x + Math.abs(d * v1.ux),
+        y: p1.y + Math.abs(d * v1.uy),
       },
       {
-        x: p2.x - Math.abs(d * v2.ux),
-        y: p2.y - Math.abs(d * v2.uy),
+        x: p2.x + Math.abs(d * v2.ux),
+        y: p2.y + Math.abs(d * v2.uy),
       },
     ];
   }
@@ -1545,7 +1549,8 @@ const getNotVHGapPoints = (options: { lines: Line[]; d: number; starts: Point[] 
 
 /**
  * 获取分割线平移一段距离d后的点，移动方向规则：
- * 1.新生成的分割线点需要在原始分割线点的正值区域
+ * 1.新生成的分割线点需要在原始分割线的正值区域
+ * 2.正值区域：在坐标系中，比分割线值大的区域
  * 参数说明：
  * 1)lines: [line1, line2, splitLine]
  *    - line1, line2: 与分割线相交的两条线

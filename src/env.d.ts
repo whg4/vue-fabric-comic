@@ -24,6 +24,11 @@ declare global {
        * basic: 基础格子，不能被拆分
        */
       cellType?: 'basic';
+
+      /**
+       * 拓展属性
+       */
+      _ext?: unknown;
     }
   }
 }

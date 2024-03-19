@@ -7,6 +7,7 @@ import Editor from '../core';
 import { getClonedObject, getImageObject } from '../utils/common';
 import { transformPoint } from '../utils/transform';
 import {
+  CellSplitEvent,
   ControlDeleteEvent,
   EDITOR_EVENTS,
   SetCellImageOptions,
@@ -45,11 +46,37 @@ class CellPlugin {
   _attachEvents() {
     this.canvas.on('mouse:dblclick', this._handleMouseDbClick);
     this.editor.on(EDITOR_EVENTS.DELETE, this._handleDelete);
+    this.editor.on(EDITOR_EVENTS.CELL_SPLIT, this._handleCellSplit);
   }
 
   _detachEvents() {
     this.canvas.off('mouse:dblclick', this._handleMouseDbClick);
     this.editor.off(EDITOR_EVENTS.DELETE, this._handleDelete);
+    this.editor.off(EDITOR_EVENTS.CELL_SPLIT, this._handleCellSplit);
+  }
+
+  _handleCellSplit(event: CellSplitEvent) {
+    const { splitObjects, originObject } = event;
+    if (originObject.type !== 'group') {
+      return;
+    }
+    // 发生格子分割时，继承被分割格子的图片、备注等信息
+    const group = originObject as fabric.Group;
+    const { _ext } = group;
+    const [first] = splitObjects;
+    console.log('splitObjects', splitObjects);
+    const imageObject = group.getObjects().find((item) => item.type === 'image');
+
+    if (!imageObject) {
+      return;
+    }
+
+    const imgEle = (imageObject as fabric.Image).getElement();
+
+    if (imgEle.src) {
+      this.canvas.setActiveObject(first);
+      this.setCellImage({ src: imgEle.src, ...(_ext || {}) });
+    }
   }
 
   /**
@@ -324,7 +351,6 @@ class CellPlugin {
       const image = await getImageObject(src);
       const zoom = this.canvas.getZoom();
       image.set({
-        ...other,
         originX: 'center',
         originY: 'center',
         scaleX: (1 / zoom) * object.scaleX!,
@@ -342,6 +368,7 @@ class CellPlugin {
 
       const point = new fabric.Point(object.left!, object.top!);
       const group = new fabric.Group([image, clonedObject], {
+        _ext: other,
         width: clonedObject.width! * clonedObject.scaleX!,
         height: clonedObject.height! * clonedObject.scaleY!,
         originX: 'left',
