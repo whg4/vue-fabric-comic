@@ -104,6 +104,38 @@ const isPositiveK = (line: Line) => {
   return line.k !== Infinity && line.k > 0;
 };
 
+const isBothNegativeK = (line1: Line, line2: Line) => {
+  return line1.k < 0 && line2.k < 0;
+};
+
+const isBothPositiveK = (line1: Line, line2: Line) => {
+  return line1.k > 0 && line2.k > 0;
+};
+
+const isBetweenNegativeK1 = (line1: Line, line2: Line) => {
+  return (line1.k > -1 && line2.k < -1) || (line1.k < -1 && line2.k > -1);
+};
+
+const isLessThanNegativeK1 = (line1: Line, line2: Line) => {
+  return line1.k < -1 && line2.k < -1;
+};
+
+const isGreaterThanNegativeK1 = (line1: Line, line2: Line) => {
+  return line1.k > -1 && line2.k > -1;
+};
+
+const isBetweenPositiveK1 = (line1: Line, line2: Line) => {
+  return (line1.k > 1 && line2.k < 1) || (line1.k < 1 && line2.k > 1);
+};
+
+const isLessThanPositiveK1 = (line1: Line, line2: Line) => {
+  return line1.k < 1 && line2.k < 1;
+};
+
+const isGreaterThanPositiveK1 = (line1: Line, line2: Line) => {
+  return line1.k > 1 && line2.k > 1;
+};
+
 /**
  * 处理垂直边和水平边的情况
  */
@@ -1128,6 +1160,96 @@ const getHorizontalAndNotVHGapPoints = (options: { lines: Line[]; d: number; sta
 };
 
 /**
+ * 处理Parellel边的情况
+ */
+const getParellelGapPoints = (options: { lines: Line[]; d: number; starts: Point[] }) => {
+  const { lines, d, starts } = options;
+  const [line1, line2, splitLine] = lines;
+  const [p1, p2] = starts;
+  const [v1, v2] = [getLineUnitVector(line1), getLineUnitVector(line2)];
+
+  if (line1.k > 0 && line1.k <= 1 && splitLine.k > 0) {
+    return [
+      {
+        x: p1.x - Math.abs(d * v1.ux),
+        y: p1.y - Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x - Math.abs(d * v2.ux),
+        y: p2.y - Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  if (line1.k > 0 && line1.k <= 1 && (splitLine.k < 0 || splitLine.isVertical)) {
+    return [
+      {
+        x: p1.x + Math.abs(d * v1.ux),
+        y: p1.y + Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x + Math.abs(d * v2.ux),
+        y: p2.y + Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  if (line1.k > 1) {
+    return [
+      {
+        x: p1.x + Math.abs(d * v1.ux),
+        y: p1.y + Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x + Math.abs(d * v2.ux),
+        y: p2.y + Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  if (line1.k > -1 && line1.k < 0 && splitLine.k > 0) {
+    return [
+      {
+        x: p1.x - Math.abs(d * v1.ux),
+        y: p1.y - Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x - Math.abs(d * v2.ux),
+        y: p2.y - Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  if (line1.k > -1 && line1.k < 0 && (splitLine.k < 0 || splitLine.isVertical)) {
+    return [
+      {
+        x: p1.x + Math.abs(d * v1.ux),
+        y: p1.y - Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x + Math.abs(d * v2.ux),
+        y: p2.y - Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  if (line1.k <= -1 && line1.k < 0) {
+    return [
+      {
+        x: p1.x - Math.abs(d * v1.ux),
+        y: p1.y + Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x - Math.abs(d * v2.ux),
+        y: p2.y + Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  return [];
+};
+
+/**
  * 处理都不是水平垂直边的情况
  */
 const getNotVHGapPoints = (options: { lines: Line[]; d: number; starts: Point[] }) => {
@@ -1367,11 +1489,12 @@ const getNotVHGapPoints = (options: { lines: Line[]; d: number; starts: Point[] 
    *   / /
    *  / /
    *  A
+   * 一条线斜率大于-1，另一条线斜率小于-1
    */
   // 分割线斜率为正
   if (
-    line1.k < 0 &&
-    line2.k < 0 &&
+    isBothNegativeK(line1, line2) &&
+    isBetweenNegativeK1(line1, line2) &&
     splitLine.k > 0 &&
     (isLeftBottom(intersectPoint, line1.p1, line2.p1) ||
       isLeftBottom(intersectPoint, line2.p1, line1.p1))
@@ -1390,8 +1513,94 @@ const getNotVHGapPoints = (options: { lines: Line[]; d: number; starts: Point[] 
 
   // 分割线斜率为负或为垂直线
   if (
-    line1.k < 0 &&
-    line2.k < 0 &&
+    isBothNegativeK(line1, line2) &&
+    isBetweenNegativeK1(line1, line2) &&
+    (splitLine.k < 0 || splitLine.isVertical) &&
+    (isLeftBottom(intersectPoint, line1.p1, line2.p1) ||
+      isLeftBottom(intersectPoint, line2.p1, line1.p1))
+  ) {
+    return [
+      {
+        x: p1.x + Math.abs(d * v1.ux),
+        y: p1.y - Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x + Math.abs(d * v2.ux),
+        y: p2.y - Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  /**
+   * 两条线斜率都小于-1
+   */
+  // 分割线斜率为正
+  if (
+    isBothNegativeK(line1, line2) &&
+    isLessThanNegativeK1(line1, line2) &&
+    splitLine.k > 0 &&
+    (isLeftBottom(intersectPoint, line1.p1, line2.p1) ||
+      isLeftBottom(intersectPoint, line2.p1, line1.p1))
+  ) {
+    return [
+      {
+        x: p1.x - Math.abs(d * v1.ux),
+        y: p1.y + Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x - Math.abs(d * v2.ux),
+        y: p2.y + Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  // 分割线斜率为负或为垂直线
+  if (
+    isBothNegativeK(line1, line2) &&
+    isLessThanNegativeK1(line1, line2) &&
+    (splitLine.k < 0 || splitLine.isVertical) &&
+    (isLeftBottom(intersectPoint, line1.p1, line2.p1) ||
+      isLeftBottom(intersectPoint, line2.p1, line1.p1))
+  ) {
+    return [
+      {
+        x: p1.x - Math.abs(d * v1.ux),
+        y: p1.y + Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x - Math.abs(d * v2.ux),
+        y: p2.y + Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  /**
+   * The two lines' k are both greater than -1
+   */
+  // split line k > 0
+  if (
+    isBothNegativeK(line1, line2) &&
+    isGreaterThanNegativeK1(line1, line2) &&
+    splitLine.k > 0 &&
+    (isLeftBottom(intersectPoint, line1.p1, line2.p1) ||
+      isLeftBottom(intersectPoint, line2.p1, line1.p1))
+  ) {
+    return [
+      {
+        x: p1.x - Math.abs(d * v1.ux),
+        y: p1.y + Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x - Math.abs(d * v2.ux),
+        y: p2.y + Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  // split line k < 0 or is vertical
+  if (
+    isBothNegativeK(line1, line2) &&
+    isGreaterThanNegativeK1(line1, line2) &&
     (splitLine.k < 0 || splitLine.isVertical) &&
     (isLeftBottom(intersectPoint, line1.p1, line2.p1) ||
       isLeftBottom(intersectPoint, line2.p1, line1.p1))
@@ -1414,10 +1623,11 @@ const getNotVHGapPoints = (options: { lines: Line[]; d: number; starts: Point[] 
    *   \ \
    *     A
    */
+  // The one edge k > 1, the other edge k < 1
   // 分割线斜率为正
   if (
-    line1.k > 0 &&
-    line2.k > 0 &&
+    isBothPositiveK(line1, line2) &&
+    isBetweenPositiveK1(line1, line2) &&
     splitLine.k > 0 &&
     (isRightBottom(intersectPoint, line1.p2, line2.p2) ||
       isRightBottom(intersectPoint, line2.p2, line1.p2))
@@ -1436,8 +1646,68 @@ const getNotVHGapPoints = (options: { lines: Line[]; d: number; starts: Point[] 
 
   // 分割线斜率为负或为垂直线
   if (
-    line1.k > 0 &&
-    line2.k > 0 &&
+    isBothPositiveK(line1, line2) &&
+    isBetweenPositiveK1(line1, line2) &&
+    (splitLine.k < 0 || splitLine.isVertical) &&
+    (isRightBottom(intersectPoint, line1.p2, line2.p2) ||
+      isRightBottom(intersectPoint, line2.p2, line1.p2))
+  ) {
+    return [
+      {
+        x: p1.x - Math.abs(d * v1.ux),
+        y: p1.y - Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x - Math.abs(d * v2.ux),
+        y: p2.y - Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  // Two edge k are greater than 1
+  if (
+    isBothPositiveK(line1, line2) &&
+    isGreaterThanPositiveK1(line1, line2) &&
+    (isRightBottom(intersectPoint, line1.p2, line2.p2) ||
+      isRightBottom(intersectPoint, line2.p2, line1.p2))
+  ) {
+    return [
+      {
+        x: p1.x + Math.abs(d * v1.ux),
+        y: p1.y + Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x + Math.abs(d * v2.ux),
+        y: p2.y + Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  // Two edge k are less than 1
+  // split line k > 0
+  if (
+    isBothPositiveK(line1, line2) &&
+    isLessThanPositiveK1(line1, line2) &&
+    splitLine.k > 0 &&
+    (isRightBottom(intersectPoint, line1.p2, line2.p2) ||
+      isRightBottom(intersectPoint, line2.p2, line1.p2))
+  ) {
+    return [
+      {
+        x: p1.x - Math.abs(d * v1.ux),
+        y: p1.y - Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x - Math.abs(d * v2.ux),
+        y: p2.y - Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  // split line k < 0 or is vertical
+  if (
+    isBothPositiveK(line1, line2) &&
+    isLessThanPositiveK1(line1, line2) &&
     (splitLine.k < 0 || splitLine.isVertical) &&
     (isRightBottom(intersectPoint, line1.p2, line2.p2) ||
       isRightBottom(intersectPoint, line2.p2, line1.p2))
@@ -1462,8 +1732,8 @@ const getNotVHGapPoints = (options: { lines: Line[]; d: number; starts: Point[] 
    */
   // 分割线斜率为正
   if (
-    line1.k < 0 &&
-    line2.k < 0 &&
+    isBothNegativeK(line1, line2) &&
+    isBetweenNegativeK1(line1, line2) &&
     splitLine.k > 0 &&
     (isRightTop(intersectPoint, line1.p2, line2.p2) ||
       isRightTop(intersectPoint, line2.p2, line1.p2))
@@ -1482,8 +1752,68 @@ const getNotVHGapPoints = (options: { lines: Line[]; d: number; starts: Point[] 
 
   // 分割线斜率为负或为垂直线
   if (
-    line1.k < 0 &&
-    line2.k < 0 &&
+    isBothNegativeK(line1, line2) &&
+    isBetweenNegativeK1(line1, line2) &&
+    (splitLine.k < 0 || splitLine.isVertical) &&
+    (isRightTop(intersectPoint, line1.p2, line2.p2) ||
+      isRightTop(intersectPoint, line2.p2, line1.p2))
+  ) {
+    return [
+      {
+        x: p1.x + Math.abs(d * v1.ux),
+        y: p1.y - Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x + Math.abs(d * v2.ux),
+        y: p2.y - Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  // Two edge k are less than -1
+  if (
+    isBothNegativeK(line1, line2) &&
+    isLessThanNegativeK1(line1, line2) &&
+    (isRightTop(intersectPoint, line1.p2, line2.p2) ||
+      isRightTop(intersectPoint, line2.p2, line1.p2))
+  ) {
+    return [
+      {
+        x: p1.x - Math.abs(d * v1.ux),
+        y: p1.y + Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x - Math.abs(d * v2.ux),
+        y: p2.y + Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  // Two edge k are greater than -1
+  // split line k > 0
+  if (
+    isBothNegativeK(line1, line2) &&
+    isGreaterThanNegativeK1(line1, line2) &&
+    splitLine.k > 0 &&
+    (isRightTop(intersectPoint, line1.p2, line2.p2) ||
+      isRightTop(intersectPoint, line2.p2, line1.p2))
+  ) {
+    return [
+      {
+        x: p1.x - Math.abs(d * v1.ux),
+        y: p1.y + Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x - Math.abs(d * v2.ux),
+        y: p2.y + Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  // split line k < 0 or is vertical
+  if (
+    isBothNegativeK(line1, line2) &&
+    isGreaterThanNegativeK1(line1, line2) &&
     (splitLine.k < 0 || splitLine.isVertical) &&
     (isRightTop(intersectPoint, line1.p2, line2.p2) ||
       isRightTop(intersectPoint, line2.p2, line1.p2))
@@ -1506,10 +1836,11 @@ const getNotVHGapPoints = (options: { lines: Line[]; d: number; starts: Point[] 
    *   \ \
    *    B C
    */
+  // the edge k > 1, the other edge k < 1
   // 分割线斜率为正
   if (
-    line1.k > 0 &&
-    line2.k > 0 &&
+    isBothPositiveK(line1, line2) &&
+    isBetweenPositiveK1(line1, line2) &&
     splitLine.k > 0 &&
     (isLeftTop(intersectPoint, line1.p1, line2.p1) || isLeftTop(intersectPoint, line2.p1, line1.p1))
   ) {
@@ -1527,8 +1858,65 @@ const getNotVHGapPoints = (options: { lines: Line[]; d: number; starts: Point[] 
 
   // 分割线斜率为负或为垂直线
   if (
-    line1.k > 0 &&
-    line2.k > 0 &&
+    isBothPositiveK(line1, line2) &&
+    isBetweenPositiveK1(line1, line2) &&
+    (splitLine.k < 0 || splitLine.isVertical) &&
+    (isLeftTop(intersectPoint, line1.p1, line2.p1) || isLeftTop(intersectPoint, line2.p1, line1.p1))
+  ) {
+    return [
+      {
+        x: p1.x + Math.abs(d * v1.ux),
+        y: p1.y + Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x + Math.abs(d * v2.ux),
+        y: p2.y + Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  // Two edge k are greater than 1
+  if (
+    isBothPositiveK(line1, line2) &&
+    isGreaterThanPositiveK1(line1, line2) &&
+    (isLeftTop(intersectPoint, line1.p1, line2.p1) || isLeftTop(intersectPoint, line2.p1, line1.p1))
+  ) {
+    return [
+      {
+        x: p1.x + Math.abs(d * v1.ux),
+        y: p1.y + Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x + Math.abs(d * v2.ux),
+        y: p2.y + Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  // Two edge k are less than 1
+  // split line k > 0
+  if (
+    isBothPositiveK(line1, line2) &&
+    isLessThanPositiveK1(line1, line2) &&
+    splitLine.k > 0 &&
+    (isLeftTop(intersectPoint, line1.p1, line2.p1) || isLeftTop(intersectPoint, line2.p1, line1.p1))
+  ) {
+    return [
+      {
+        x: p1.x - Math.abs(d * v1.ux),
+        y: p1.y - Math.abs(d * v1.uy),
+      },
+      {
+        x: p2.x - Math.abs(d * v2.ux),
+        y: p2.y - Math.abs(d * v2.uy),
+      },
+    ];
+  }
+
+  // split line k < 0 or is vertical
+  if (
+    isBothPositiveK(line1, line2) &&
+    isLessThanPositiveK1(line1, line2) &&
     (splitLine.k < 0 || splitLine.isVertical) &&
     (isLeftTop(intersectPoint, line1.p1, line2.p1) || isLeftTop(intersectPoint, line2.p1, line1.p1))
   ) {
@@ -1600,6 +1988,11 @@ export const getGapPoints = (options: { lines: Line[]; d: number; starts: Point[
     (line2.isHorizontal && !line1.isVerticalOrHorizontal)
   ) {
     return getHorizontalAndNotVHGapPoints({ lines, d, starts: [p1, p2] });
+  }
+
+  // 处理平行线的情况
+  if (!line1.isVerticalOrHorizontal && !line2.isVerticalOrHorizontal && line1.k === line2.k) {
+    return getParellelGapPoints({ lines, d, starts: [p1, p2] });
   }
 
   // 处理都不是水平垂直边的情况
