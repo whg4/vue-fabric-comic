@@ -29,7 +29,7 @@ class CellPlugin {
   canvas: fabric.Canvas;
   editor: Editor;
   static pluginName = 'CellPlugin';
-  static apis = ['setCellImage', 'clearCellImage'];
+  static apis = ['setCellImage', 'clearCellImage', 'setCellRemark'];
   static events = [];
   hotkeys: string[] = [];
   constructor(canvas: fabric.Canvas, editor: Editor) {
@@ -112,15 +112,16 @@ class CellPlugin {
     this.canvas.renderAll();
   };
 
-  _handleMouseDbClick = async () => {
+  _handleMouseDbClick = async (e: fabric.IEvent) => {
     const activeObject = this.canvas.getActiveObject();
+    console.log('doubleClick event', e);
     const groupObject = activeObject
       ? activeObject.type !== 'group'
         ? activeObject.group
         : activeObject
       : null;
 
-    console.log('groupObject', groupObject);
+    console.log('doubleClick groupObject', groupObject);
     if (!groupObject || groupObject.type !== 'group') {
       return;
     }
@@ -200,6 +201,7 @@ class CellPlugin {
     });
 
     transformImage.on('deselected', () => {
+      console.log('transformImage deselected');
       /**
        * 当被操作的图片被取消选中时，将该图片移除
        */
@@ -375,6 +377,7 @@ class CellPlugin {
         originY: 'top',
         left: point.x,
         top: point.y,
+        cellType: 'basic',
         clipPath: clonedObject,
       });
       this.canvas.remove(object);
@@ -382,6 +385,68 @@ class CellPlugin {
       this.canvas.setActiveObject(group);
     } catch (error) {
       console.log('_handleSetImage error', error);
+    }
+  }
+
+  // 设置格子备注
+  async setCellRemark(remark: string) {
+    const activeObject = this.canvas.getActiveObject();
+    console.log('activeObject', activeObject);
+    if (!activeObject) {
+      console.warn('setCellRemark no active object');
+      return;
+    }
+
+    activeObject.setCoords();
+    if (activeObject.type !== 'group') {
+      const clonedObject = await getClonedObject(activeObject);
+      const imageObject = await getImageObject('');
+      imageObject.set({
+        originX: 'center',
+        originY: 'center',
+        selectable: false,
+      });
+      clonedObject.set({
+        left: 0,
+        top: 0,
+        originX: 'center',
+        originY: 'center',
+        fill: 'transparent',
+        selectable: false,
+      });
+      const fontSize = 12 / this.canvas.getZoom();
+      const padding = 16 / this.canvas.getZoom();
+      const text = new fabric.Textbox(remark, {
+        left: 0,
+        top: -(clonedObject.height! / 2) + padding,
+        width: clonedObject.width! - padding * 2,
+        height: clonedObject.height! - padding * 2,
+        fontSize,
+        scaleX: clonedObject.scaleX,
+        scaleY: clonedObject.scaleY,
+        stroke: '#332828',
+        strokeWidth: 1,
+        fill: '#fff',
+        originX: 'center',
+        originY: 'center',
+        hasControls: false,
+      });
+
+      const group = new fabric.Group([imageObject, clonedObject, text], {
+        width: clonedObject.width,
+        height: clonedObject.height,
+        scaleX: clonedObject.scaleX,
+        scaleY: clonedObject.scaleY,
+        left: activeObject.left,
+        top: activeObject.top,
+        originX: 'left',
+        originY: 'top',
+        cellType: 'basic',
+        clipPath: clonedObject,
+      });
+      this.canvas.remove(activeObject);
+      this.canvas.add(group);
+      this.canvas.setActiveObject(group);
     }
   }
 

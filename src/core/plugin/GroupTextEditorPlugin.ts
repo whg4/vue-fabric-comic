@@ -15,7 +15,9 @@ class GroupTextEditorPlugin {
   public canvas: fabric.Canvas;
   public editor: IEditor;
   static pluginName = 'GroupTextEditorPlugin';
+
   isDown = false;
+
   constructor(canvas: fabric.Canvas, editor: IEditor) {
     this.canvas = canvas;
     this.editor = editor;
@@ -111,14 +113,17 @@ class GroupTextEditorPlugin {
       top: newY,
       styles: textObject.styles,
       groupCopyed: textObject.group,
+      visible: true,
+      selectable: true,
+      hasControls: true,
+      editable: true,
     });
     tempText.id = uuid();
-    textObject.visible = false;
-    opt.target.addWithUpdate();
-    tempText.visible = true;
-    tempText.selectable = true;
-    tempText.hasConstrols = false;
-    tempText.editable = true;
+    textObject.set('visible', false);
+    this.canvas.renderAll();
+    if (opt.target.cellType !== 'basic') {
+      opt.target.addWithUpdate();
+    }
     this.canvas.add(tempText);
     this.canvas.setActiveObject(tempText);
     tempText.enterEditing();
@@ -130,8 +135,13 @@ class GroupTextEditorPlugin {
         text: tempText.text,
         visible: true,
       });
-      opt.target.addWithUpdate();
-      tempText.visible = false;
+      if (opt.target.cellType !== 'basic') {
+        opt.target.addWithUpdate();
+      }
+      this.canvas.renderAll();
+      tempText.set({
+        visible: false,
+      });
       this.canvas.remove(tempText);
       this.canvas.setActiveObject(opt.target);
     });

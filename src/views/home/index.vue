@@ -108,6 +108,7 @@
             <Button @click="handleSetImage('2')" size="small">设置图片2</Button>
             <Button @click="handleSetImage('3')" size="small">设置图片3</Button>
             <Button @click="handleSetImage('4')" size="small">设置图片4</Button>
+            <Button @click="handleSetRemark()" size="small">设置备注</Button>
             <set-size></set-size>
             <bg-bar></bg-bar>
             <group></group>
@@ -225,23 +226,24 @@ onMounted(() => {
 
   // 初始化编辑器
   canvasEditor.init(canvas);
-  canvasEditor.use(DringPlugin);
+  // canvasEditor.use(DringPlugin);
   canvasEditor.use(AlignGuidLinePlugin);
   canvasEditor.use(ControlsPlugin);
   canvasEditor.use(ControlsRotatePlugin);
-  canvasEditor.use(CenterAlignPlugin);
+  // canvasEditor.use(CenterAlignPlugin);
   canvasEditor.use(LayerPlugin);
   canvasEditor.use(CopyPlugin);
-  canvasEditor.use(MoveHotKeyPlugin);
-  canvasEditor.use(DeleteHotKeyPlugin);
-  canvasEditor.use(GroupPlugin);
+  // canvasEditor.use(MoveHotKeyPlugin);
+  // canvasEditor.use(DeleteHotKeyPlugin);
+  // canvasEditor.use(GroupPlugin);
   canvasEditor.use(DrawLinePlugin);
+
   canvasEditor.use(GroupTextEditorPlugin);
-  canvasEditor.use(GroupAlignPlugin);
+  // canvasEditor.use(GroupAlignPlugin);
   canvasEditor.use(WorkspacePlugin);
   canvasEditor.use(DownFontPlugin);
   canvasEditor.use(HistoryPlugin);
-  canvasEditor.use(FlipPlugin);
+  // canvasEditor.use(FlipPlugin);
   canvasEditor.use(RulerPlugin);
   canvasEditor.use(MaterialPlugin);
   canvasEditor.use(SplitCellPlugin);
@@ -272,6 +274,10 @@ const handleSetImage = (type = '1') => {
       src: `/debu${type}.png`,
     });
   }
+};
+
+const handleSetRemark = () => {
+  canvasEditor.setCellRemark('备注仅作为您制作漫画的参考使用，不会出现在最终漫画作品中');
 };
 
 // 获取字体数据 新增字体样式使用
