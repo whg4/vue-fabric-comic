@@ -11,11 +11,10 @@ import {
   isSameLine,
 } from '../utils/linear-equation';
 import { Line } from '../utils/line';
-import { Point } from '../utils/types';
 import { grahamScan } from '../utils/gram-scan';
 import { isBasicCell } from '../utils/common';
 import { getGapPoints } from '../utils/split-helper';
-import { EDITOR_EVENTS } from '../types';
+import { EDITOR_EVENTS, Point } from '../types';
 
 export default class SplitCellPlugin {
   public canvas: fabric.Canvas;
@@ -377,6 +376,7 @@ export default class SplitCellPlugin {
     this.editor.emit(EDITOR_EVENTS.CELL_SPLIT, {
       splitObjects: [splitShape1, splitShape2],
       originObject: activeObject,
+      splitLine,
     });
     this.editor.emit(EDITOR_EVENTS.SPLIT_MODE_CHANGE, this.isSplitMode);
   };

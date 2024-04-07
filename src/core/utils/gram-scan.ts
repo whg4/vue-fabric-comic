@@ -1,4 +1,4 @@
-import { Point } from './types';
+import { Point } from '../types';
 
 // 计算相对于点p0的极角
 const polarAngle = (p0: Point, p1: Point) => {

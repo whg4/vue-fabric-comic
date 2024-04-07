@@ -23,12 +23,24 @@ declare global {
        * 格子类型，
        * basic: 基础格子，不能被拆分
        */
-      cellType?: 'basic';
+      cellType?: 'basic' | 'transform-image';
 
       /**
        * 拓展属性
        */
       _ext?: unknown;
+    }
+
+    interface ITextOptions {
+      /**
+       * 文本最大字符数
+       */
+      maxlength?: number;
+
+      /**
+       * placeholder
+       */
+      placeholder?: string;
     }
   }
 }

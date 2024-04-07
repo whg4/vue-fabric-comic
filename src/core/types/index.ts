@@ -1,3 +1,5 @@
+import { Line } from '../utils/line';
+
 export interface ControlDeleteEvent {
   originEvent: MouseEvent;
   target: fabric.Transform;
@@ -14,6 +16,8 @@ export interface CellSplitEvent {
    * 被分割object
    */
   originObject: fabric.Object;
+
+  splitLine: Line;
 }
 
 export enum Cell {
@@ -21,6 +25,11 @@ export enum Cell {
    * 基础格子，不能被拆分
    */
   BASIC = 'basic',
+
+  /**
+   *
+   */
+  TRANSFORM_IMAGE = 'transform-image',
 }
 
 export interface SetCellImageOptions {
@@ -49,3 +58,8 @@ export enum EDITOR_EVENTS {
 }
 
 export const TRANSFORM_IMAGE_ID = 'TRANSFORM_IMAGE';
+
+export interface Point {
+  x: number;
+  y: number;
+}

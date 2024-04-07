@@ -1,5 +1,5 @@
+import { Point } from '../types';
 import { Line } from './line';
-import { Point } from './types';
 
 export const getLines = (points: Point[]) => {
   const edges = [];

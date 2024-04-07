@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { fabric } from 'fabric';
-import { Point } from './types';
+import { Point } from '../types';
 
 export const transformPoint = (point: fabric.Point, matrix: number[]) => {
   return fabric.util.transformPoint(point, matrix);

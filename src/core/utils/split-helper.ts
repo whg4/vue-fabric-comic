@@ -1,6 +1,6 @@
+import { Point } from '../types';
 import { Line } from './line';
 import { getIntersectPoint, getLineUnitVector, isInTheLine } from './linear-equation';
-import { Point } from './types';
 
 const isLeftTop = (p: Point | null, p1: Point, p2: Point) => {
   if (!p) {
