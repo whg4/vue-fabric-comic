@@ -29,6 +29,11 @@ declare global {
        * 拓展属性
        */
       _ext?: unknown;
+
+      /**
+       * 格子原始的边框大小
+       */
+      _strokeWidth?: number;
     }
 
     interface ITextOptions {

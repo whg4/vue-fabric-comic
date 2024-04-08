@@ -90,6 +90,30 @@ export const getLineUnitVector = (line: Line) => {
   };
 };
 
+export const moveNegativeDistance = (options: {
+  point: Point;
+  vector: { ux: number; uy: number };
+  distance: number;
+}) => {
+  const { point, vector, distance } = options;
+  return {
+    x: point.x - vector.ux * distance,
+    y: point.y - vector.uy * distance,
+  };
+};
+
+export const movePositiveDistance = (options: {
+  point: Point;
+  vector: { ux: number; uy: number };
+  distance: number;
+}) => {
+  const { point, vector, distance } = options;
+  return {
+    x: point.x + vector.ux * distance,
+    y: point.y + vector.uy * distance,
+  };
+};
+
 export const isSamePoint = (point1: Point, point2: Point, precise = 2) => {
   return (
     point1.x.toFixed(precise) === point2.x.toFixed(precise) &&

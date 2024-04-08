@@ -77,15 +77,71 @@ class CellPlugin {
 
   _attachEvents() {
     this.canvas.on('mouse:dblclick', this._handleMouseDbClick);
+    this.canvas.on('object:scaling', this._handleCellScaling);
     this.editor.on(EDITOR_EVENTS.DELETE, this._handleDelete);
     this.editor.on(EDITOR_EVENTS.CELL_SPLIT, this._handleCellSplit);
   }
 
   _detachEvents() {
     this.canvas.off('mouse:dblclick', this._handleMouseDbClick);
+    this.canvas.off('object:scaling', this._handleCellScaling);
     this.editor.off(EDITOR_EVENTS.DELETE, this._handleDelete);
     this.editor.off(EDITOR_EVENTS.CELL_SPLIT, this._handleCellSplit);
   }
+
+  _getScalingOperateTarget(target?: fabric.Object) {
+    if (!target) {
+      return null;
+    }
+
+    if (target.type !== 'group') {
+      return target;
+    }
+
+    const groupTarget = target as fabric.Group;
+    const innerGroup = groupTarget.getObjects().find((object) => object.type === 'group') as
+      | fabric.Group
+      | undefined;
+
+    if (!innerGroup) {
+      return null;
+    }
+
+    const cellObject = innerGroup.getObjects().find((object) => object.type !== 'image');
+    if (cellObject) {
+      return cellObject;
+    }
+
+    return null;
+  }
+
+  /**
+   * 格子缩放，让格子边框保持视觉宽度（近式）一致
+   */
+  _handleCellScaling = (e: fabric.IEvent) => {
+    const target = e.target;
+    const operatingTarget = this._getScalingOperateTarget(target);
+
+    if (!operatingTarget || !target || target.cellType !== Cell.BASIC) {
+      return;
+    }
+
+    if (!operatingTarget._strokeWidth) {
+      operatingTarget._strokeWidth = operatingTarget.strokeWidth || 10;
+    }
+
+    const baseStrokeWidth = operatingTarget._strokeWidth!;
+
+    const strokeWidth = Math.floor(baseStrokeWidth / ((target.scaleX! + target.scaleY!) / 2));
+
+    operatingTarget.set({
+      strokeWidth,
+      width: operatingTarget.width! * operatingTarget.scaleX!,
+      height: operatingTarget.height! * operatingTarget.scaleY!,
+      scaleX: 1,
+      scaleY: 1,
+    });
+  };
 
   /**
    * 当格子发生分割时，继承被分割格子的图片、备注等信息
@@ -450,8 +506,8 @@ class CellPlugin {
       });
 
       const point = new fabric.Point(object.left!, object.top!);
-      const clipPath = this._getOuterGroupClipPath(object);
       const groupProps = this._getCommonGroupProps(object);
+
       const innerGroup = new fabric.Group([image, clonedObject], {
         ...groupProps,
         left: 0,
@@ -465,7 +521,6 @@ class CellPlugin {
         ...groupProps,
         left: point.x,
         top: point.y,
-        clipPath,
       });
       // 将删除放到最后了，因为先删会导致activeObject为null
       this.canvas.add(outerGroup);
@@ -563,6 +618,20 @@ class CellPlugin {
     return clonedObject;
   }
 
+  _getCommonGroupProps(object: fabric.Object) {
+    const groupProps = {
+      originX: 'left',
+      originY: 'top',
+      width: object.width! * object.scaleX!,
+      height: object.height! * object.scaleY!,
+      // 不要缩放
+      scaleX: 1,
+      scaleY: 1,
+    };
+
+    return groupProps;
+  }
+
   _getOuterGroupClipPath(object: fabric.Object) {
     const clipPath = new fabric.Rect({
       left: 0,
@@ -573,19 +642,6 @@ class CellPlugin {
       height: object.height,
     });
     return clipPath;
-  }
-
-  _getCommonGroupProps(object: fabric.Object) {
-    const groupProps = {
-      originX: 'left',
-      originY: 'top',
-      width: object.width,
-      height: object.height,
-      scaleX: object.scaleX,
-      scaleY: object.scaleY,
-    };
-
-    return groupProps;
   }
 
   async handleSetGroupRemark(options: { remark: string; group: fabric.Group }) {
@@ -615,7 +671,6 @@ class CellPlugin {
     const { object, remark } = options;
     const clonedObject = await this._getClonedCellObject(object);
     const textBox = this._getRemarkTextbox({ remark, object });
-    const clipPath = this._getOuterGroupClipPath(object);
     const groupProps = this._getCommonGroupProps(object);
     const innerGroup = new fabric.Group([clonedObject], {
       ...groupProps,
@@ -631,7 +686,6 @@ class CellPlugin {
       cellType: 'basic',
       left: object.left,
       top: object.top,
-      clipPath,
     });
     this.canvas.add(outerGroup);
     this.canvas.setActiveObject(outerGroup);
