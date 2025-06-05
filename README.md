@@ -1,4 +1,5 @@
 fork from: https://github.com/ikuaitu/vue-fabric-editor
+
 [文档](https://nihaojob.github.io/editorDoc/) | [English](https://github.com/nihaojob/vue-fabric-editor/blob/main/README-en.md) | 中文 
 
 # vue-fabric-editor
