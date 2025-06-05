@@ -1,0 +1,391 @@
+{
+	"version": "5.3.0",
+	"objects": [
+		{
+			"type": "rect",
+			"version": "5.3.0",
+			"originX": "left",
+			"originY": "top",
+			"left": 0,
+			"top": 0,
+			"width": 3035,
+			"height": 4299,
+			"fill": "rgba(255,255,255,1)",
+			"stroke": null,
+			"strokeWidth": 0,
+			"strokeDashArray": null,
+			"strokeLineCap": "butt",
+			"strokeDashOffset": 0,
+			"strokeLineJoin": "miter",
+			"strokeUniform": false,
+			"strokeMiterLimit": 4,
+			"scaleX": 1,
+			"scaleY": 1,
+			"angle": 0,
+			"flipX": false,
+			"flipY": false,
+			"opacity": 1,
+			"shadow": null,
+			"visible": true,
+			"backgroundColor": "",
+			"fillRule": "nonzero",
+			"paintFirst": "fill",
+			"globalCompositeOperation": "source-over",
+			"skewX": 0,
+			"skewY": 0,
+			"rx": 0,
+			"ry": 0,
+			"id": "workspace",
+			"selectable": false,
+			"hasControls": false
+		},
+		{
+			"type": "polygon",
+			"version": "5.3.0",
+			"originX": "left",
+			"originY": "top",
+			"left": 1186.16,
+			"top": 59,
+			"width": 1779.84,
+			"height": 1435.96,
+			"fill": "white",
+			"stroke": "#494440",
+			"strokeWidth": 10,
+			"strokeDashArray": null,
+			"strokeLineCap": "butt",
+			"strokeDashOffset": 0,
+			"strokeLineJoin": "miter",
+			"strokeUniform": false,
+			"strokeMiterLimit": 4,
+			"scaleX": 1,
+			"scaleY": 1,
+			"angle": 0,
+			"flipX": false,
+			"flipY": false,
+			"opacity": 1,
+			"shadow": null,
+			"visible": true,
+			"backgroundColor": "",
+			"fillRule": "nonzero",
+			"paintFirst": "fill",
+			"globalCompositeOperation": "source-over",
+			"skewX": 0,
+			"skewY": 0,
+			"selectable": true,
+			"hasControls": true,
+			"cellType":"basic",
+			"points": [
+				{
+					"x":265,
+					"y":1240.51
+				},
+				{
+					"x":5,
+					"y":5
+				},
+				{
+					"x":1784.84,
+					"y":5
+				},
+				{
+					"x":1784.84,
+					"y":1440.96
+				},
+				{
+					"x":265,
+					"y":1240.51
+				}
+			]
+		},
+		{
+			"type": "polygon",
+			"version": "5.3.0",
+			"originX": "left",
+			"originY": "top",
+			"left": 59,
+			"top": 3055.21,
+			"width": 1285.6,
+			"height": 1174.79,
+			"fill": "white",
+			"stroke": "#494440",
+			"strokeWidth": 10,
+			"strokeDashArray": null,
+			"strokeLineCap": "butt",
+			"strokeDashOffset": 0,
+			"strokeLineJoin": "miter",
+			"strokeUniform": false,
+			"strokeMiterLimit": 4,
+			"scaleX": 1,
+			"scaleY": 1,
+			"angle": 0,
+			"flipX": false,
+			"flipY": false,
+			"opacity": 1,
+			"shadow": null,
+			"visible": true,
+			"backgroundColor": "",
+			"fillRule": "nonzero",
+			"paintFirst": "fill",
+			"globalCompositeOperation": "source-over",
+			"skewX": 0,
+			"skewY": 0,
+			"selectable": true,
+			"hasControls": true,
+			"cellType":"basic",
+			"points": [
+				{
+					"x":1290.6,
+					"y":5
+				},
+				{
+					"x":1040.93,
+					"y":1179.79
+				},
+				{
+					"x":5,
+					"y":1179.79
+				},
+				{
+					"x":5,
+					"y":232.98
+				},
+				{
+					"x":1290.6,
+					"y":5
+				}
+			]
+		},
+		{
+			"type": "polygon",
+			"version": "5.3.0",
+			"originX": "left",
+			"originY": "top",
+			"left": 2035,
+			"top": 1426.71,
+			"width": 931,
+			"height": 1461.33,
+			"fill": "white",
+			"stroke": "#494440",
+			"strokeWidth": 10,
+			"strokeDashArray": null,
+			"strokeLineCap": "butt",
+			"strokeDashOffset": 0,
+			"strokeLineJoin": "miter",
+			"strokeUniform": false,
+			"strokeMiterLimit": 4,
+			"scaleX": 1,
+			"scaleY": 1,
+			"angle": 0,
+			"flipX": false,
+			"flipY": false,
+			"opacity": 1,
+			"shadow": null,
+			"visible": true,
+			"backgroundColor": "",
+			"fillRule": "nonzero",
+			"paintFirst": "fill",
+			"globalCompositeOperation": "source-over",
+			"skewX": 0,
+			"skewY": 0,
+			"selectable": true,
+			"hasControls": true,
+			"cellType":"basic",
+			"points": [
+				{
+					"x":936,
+					"y":128.71
+				},
+				{
+					"x":5,
+					"y":5
+				},
+				{
+					"x":5,
+					"y":1466.33
+				},
+				{
+					"x":936,
+					"y":1302.09
+				},
+				{
+					"x":936,
+					"y":128.71
+				}
+			]
+		},
+		{
+			"type": "polygon",
+			"version": "5.3.0",
+			"originX": "left",
+			"originY": "top",
+			"left": 59,
+			"top": 59,
+			"width": 1328.64,
+			"height": 1223.79,
+			"fill": "white",
+			"stroke": "#494440",
+			"strokeWidth": 10,
+			"strokeDashArray": null,
+			"strokeLineCap": "butt",
+			"strokeDashOffset": 0,
+			"strokeLineJoin": "miter",
+			"strokeUniform": false,
+			"strokeMiterLimit": 4,
+			"scaleX": 1,
+			"scaleY": 1,
+			"angle": 0,
+			"flipX": false,
+			"flipY": false,
+			"opacity": 1,
+			"shadow": null,
+			"visible": true,
+			"backgroundColor": "",
+			"fillRule": "nonzero",
+			"paintFirst": "fill",
+			"globalCompositeOperation": "source-over",
+			"skewX": 0,
+			"skewY": 0,
+			"selectable": true,
+			"hasControls": true,
+			"cellType":"basic",
+			"points": [
+				{
+					"x":5,
+					"y":5
+				},
+				{
+					"x":1073.95,
+					"y":5
+				},
+				{
+					"x":1333.64,
+					"y":1228.79
+				},
+				{
+					"x":5,
+					"y":1054.28
+				},
+				{
+					"x":5,
+					"y":5
+				}
+			]
+		},
+		{
+			"type": "polygon",
+			"version": "5.3.0",
+			"originX": "left",
+			"originY": "top",
+			"left": 1158.13,
+			"top": 2766.97,
+			"width": 1807.87,
+			"height": 1463.03,
+			"fill": "white",
+			"stroke": "#494440",
+			"strokeWidth": 10,
+			"strokeDashArray": null,
+			"strokeLineCap": "butt",
+			"strokeDashOffset": 0,
+			"strokeLineJoin": "miter",
+			"strokeUniform": false,
+			"strokeMiterLimit": 4,
+			"scaleX": 1,
+			"scaleY": 1,
+			"angle": 0,
+			"flipX": false,
+			"flipY": false,
+			"opacity": 1,
+			"shadow": null,
+			"visible": true,
+			"backgroundColor": "",
+			"fillRule": "nonzero",
+			"paintFirst": "fill",
+			"globalCompositeOperation": "source-over",
+			"skewX": 0,
+			"skewY": 0,
+			"selectable": true,
+			"hasControls": true,
+			"cellType":"basic",
+			"points": [
+				{
+					"x":1812.87,
+					"y":1468.03
+				},
+				{
+					"x":5,
+					"y":1468.03
+				},
+				{
+					"x":247.09,
+					"y":283.36
+				},
+				{
+					"x":1812.87,
+					"y":5
+				},
+				{
+					"x":1812.87,
+					"y":1468.03
+				}
+			]
+		},
+		{
+			"type": "polygon",
+			"version": "5.3.0",
+			"originX": "left",
+			"originY": "top",
+			"left": 59,
+			"top": 1162.71,
+			"width": 1926,
+			"height": 2073.33,
+			"fill": "white",
+			"stroke": "#494440",
+			"strokeWidth": 10,
+			"strokeDashArray": null,
+			"strokeLineCap": "butt",
+			"strokeDashOffset": 0,
+			"strokeLineJoin": "miter",
+			"strokeUniform": false,
+			"strokeMiterLimit": 4,
+			"scaleX": 1,
+			"scaleY": 1,
+			"angle": 0,
+			"flipX": false,
+			"flipY": false,
+			"opacity": 1,
+			"shadow": null,
+			"visible": true,
+			"backgroundColor": "",
+			"fillRule": "nonzero",
+			"paintFirst": "fill",
+			"globalCompositeOperation": "source-over",
+			"skewX": 0,
+			"skewY": 0,
+			"selectable": true,
+			"hasControls": true,
+			"cellType":"basic",
+			"points": [
+				{
+					"x":1931,
+					"y":260.69
+				},
+				{
+					"x":5,
+					"y":5
+				},
+				{
+					"x":5,
+					"y":2078.33
+				},
+				{
+					"x":1931,
+					"y":1738.1
+				},
+				{
+					"x":1931,
+					"y":260.69
+				}
+			]
+		}
+	]
+}
